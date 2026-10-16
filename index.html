@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notas Pendentes de Pedido de Compra COAP</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--g1:#14532d;--g2:#1f7a3a;--g3:#e8f3ea;--bg:#f4f6f4;--ink:#17231b;--mu:#5d6b62;--ln:#d5ded7;--r:#b42318;--rb:#fde8e6;--y:#8a5a00;--yb:#fff3cd;--ok:#14532d;--okb:#dcf3e0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+[hidden]{display:none!important}
+header{background:var(--g1);color:#fff;padding:12px 20px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center}
+header h1{font-size:1.05rem;margin:0}header div{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.85rem}
+main{flex:1;width:100%;max-width:1100px;margin:0 auto;padding:18px 16px}
+footer{text-align:center;color:var(--mu);font-size:.8rem;padding:14px;border-top:1px solid var(--ln)}
+button,.btn{font:inherit;font-weight:600;border-radius:6px;padding:8px 14px;min-height:40px;cursor:pointer;border:1px solid var(--g2);background:#fff;color:var(--g2)}
+button.pri{background:var(--g2);color:#fff}header button{background:transparent;color:#fff;border-color:#ffffff88}
+button.lk{border:0;background:none;color:var(--r);text-decoration:underline;min-height:0;padding:4px 0}
+button:disabled{opacity:.6}
+input,select,textarea{font:inherit;width:100%;padding:8px 10px;min-height:40px;border:1px solid var(--ln);border-radius:6px;background:#fff;color:var(--ink)}
+:focus-visible{outline:2px solid var(--g2);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:3px;font-size:.82rem;color:var(--mu);font-weight:600}
+#login{max-width:380px;margin:12vh auto;background:#fff;border:1px solid var(--ln);border-radius:10px;padding:24px}
+#login h1{font-size:1.15rem;margin:0 0 16px;color:var(--g1)}#login form{display:grid;gap:12px}
+.msg{color:var(--r);font-size:.9rem;min-height:1.3em;margin:8px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:10px}
+.k{background:#fff;border:1px solid var(--ln);border-radius:8px;padding:10px 12px}.k b{display:block;font-size:1.5rem}.k span{font-size:.8rem;color:var(--mu)}
+.k.sem b{color:var(--r)}.k.parcial b{color:var(--y)}.k.completo b{color:var(--ok)}
+#porun{color:var(--mu);font-size:.88rem;margin:8px 0 14px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.tools input{flex:1 1 230px;width:auto}.tools select{width:auto}
+details.nota{background:#fff;border:1px solid var(--ln);border-radius:8px;margin-bottom:8px}
+summary{cursor:pointer;padding:12px 14px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+summary b{min-width:120px}summary .e{flex:1 1 200px}summary .mu{color:var(--mu);font-size:.85rem}
+.bd{font-size:.78rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap;display:inline-block}
+.bd.sem{background:var(--rb);color:var(--r)}.bd.parcial{background:var(--yb);color:var(--y)}.bd.completo{background:var(--okb);color:var(--ok)}
+.bd.venc{background:var(--r);color:#fff}.bd.prox{background:#f5a524;color:#3b2500}
+.body{border-top:1px solid var(--ln);padding:8px 14px 12px}
+.it{display:grid;grid-template-columns:2fr 1fr 1.4fr 1.6fr;gap:4px 12px;padding:8px 0;border-bottom:1px solid var(--ln);font-size:.9rem}
+.it small{color:var(--mu);display:block}
+.acts{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}.det{color:var(--mu);font-size:.85rem;margin:6px 0}
+.empty{text-align:center;color:var(--mu);padding:30px;border:1px dashed var(--ln);border-radius:8px}
+dialog{border:1px solid var(--ln);border-radius:10px;width:min(820px,96vw);max-height:92vh;padding:18px;color:var(--ink)}
+dialog::backdrop{background:#0006}dialog h2{margin:0 0 12px;font-size:1.1rem;color:var(--g1)}dialog h3{font-size:.95rem;margin:16px 0 8px;color:var(--g1)}
+.gr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.w2{grid-column:span 2}.w4{grid-column:1/-1}
+.ip{border:1px solid var(--ln);border-radius:8px;padding:10px;margin-bottom:10px;background:var(--bg)}
+.ip.sem .po{display:none}.pe{grid-column:1/-1;margin:0;font-weight:600;color:var(--g1);font-size:.88rem}
+.row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.ur{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--ln);font-size:.88rem}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;z-index:9}#toast.on{opacity:1}
+@media (max-width:700px){.gr{grid-template-columns:1fr 1fr}.it{grid-template-columns:1fr 1fr}.ur{grid-template-columns:1fr 1fr}}
+@media print{header,.kpis,.tools,.acts,#porun{display:none!important}body{background:#fff}details.nota{break-inside:avoid}}
+</style>
+</head>
+<body>
+<section id="login" hidden>
+<h1>Notas Pendentes de Pedido de Compra COAP</h1>
+<form id="lf"><label>E-mail<input id="le" type="email" autocomplete="username" required></label>
+<label>Senha<input id="ls" type="password" autocomplete="current-password" required></label>
+<button class="pri" type="submit">Entrar</button><button class="lk" type="button" id="esq" style="color:var(--g2)">Esqueci minha senha</button></form>
+<p class="msg" id="lmsg" role="alert"></p>
+</section>
+
+<div id="app" hidden>
+<header><h1>Notas Pendentes de Pedido de Compra COAP</h1>
+<div><span id="quem"></span><button id="badm" hidden>Usuários</button><button id="bcfg">Configurações</button><button id="bsai">Sair</button></div></header>
+<main>
+<div class="kpis" id="kpis"></div><p id="porun"></p>
+<div class="tools">
+<button class="pri" id="bnew">Nova nota</button>
+<input id="q" type="search" placeholder="Buscar: NF, empresa, CNPJ, chave, produto, lote ou pedido" aria-label="Buscar">
+<select id="flt" aria-label="Filtro"><option value="todos">Todas as notas</option><option value="pend">Com pendência de pedido</option><option value="sem">Sem pedido</option><option value="parcial">Pedido parcial</option><option value="completo">Pedido completo</option><option value="venc">Validade próxima ou vencida</option></select>
+<button id="bx">Exportar Excel</button><button id="bc">Exportar CSV</button><button id="bm">Baixar formulário</button><button id="bp">Imprimir pendentes</button>
+</div>
+<div id="lista"></div>
+</main></div>
+<footer>Notas Pendentes de Pedido de Compra COAP</footer>
+
+<dialog id="fdlg"><form id="nf-form" novalidate>
+<h2 id="ft">Cadastrar nota fiscal</h2>
+<div class="gr">
+<label>Número da NF *<input id="nf" inputmode="numeric"></label><label>Série<input id="serie"></label>
+<label>Data de emissão *<input id="data" type="date"></label><label>CNPJ do emitente<input id="cnpj" inputmode="numeric" placeholder="Somente números"></label>
+<label class="w4">Empresa emitente *<input id="empresa"></label>
+<label class="w4">Chave de acesso (44 dígitos)<input id="chave" inputmode="numeric"></label>
+<label class="w4">Observações gerais<input id="obs"></label></div>
+<h3>Produtos da nota (um registro por lote)</h3><div id="its"></div>
+<button type="button" id="addi">Adicionar produto ou lote</button>
+<datalist id="uns"><option>L</option><option>kg</option><option>dose</option><option>un</option><option>cx</option><option>galão</option></datalist>
+<p class="msg" id="fmsg" role="alert"></p>
+<div class="row"><button class="pri" type="submit" id="fsave">Salvar nota</button><button type="button" id="fcan">Cancelar</button></div>
+</form></dialog>
+
+<dialog id="cdlg"><h2>Configurações</h2><p id="cmail" class="det"></p>
+<form id="cf" class="gr" style="grid-template-columns:1fr">
+<label>Senha atual<input id="pa" type="password" autocomplete="current-password"></label>
+<label>Nova senha (mínimo 6 caracteres)<input id="pn" type="password" autocomplete="new-password"></label>
+<label>Repetir nova senha<input id="pr" type="password" autocomplete="new-password"></label>
+<p class="msg" id="cmsg" role="alert"></p>
+<div class="row"><button class="pri" type="submit">Alterar senha</button><button type="button" id="ccan">Fechar</button></div></form></dialog>
+
+<dialog id="udlg"><h2>Usuários e permissões</h2><div id="ulist"></div>
+<h3>Novo usuário</h3>
+<form id="uf" class="gr"><label>Nome<input id="un" required></label><label>E-mail<input id="ue" type="email" required></label>
+<label>Senha provisória (mín. 6)<input id="up" type="text" minlength="6" required></label>
+<label>Perfil<select id="ur"><option value="user">Usuário</option><option value="admin">Administrador</option></select></label>
+<p class="msg w4" id="umsg" role="alert"></p>
+<div class="row w4"><button class="pri" type="submit">Criar usuário</button><button type="button" id="ucan">Fechar</button></div></form></dialog>
+<div id="toast" role="status"></div>
+
+<script type="module">
+import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,signOut,sendPasswordResetEmail,updatePassword,reauthenticateWithCredential,EmailAuthProvider,createUserWithEmailAndPassword} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,setDoc,deleteDoc,onSnapshot} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+// >>> COLE AQUI a configuração do seu app web do Firebase (veja o LEIA-ME.md)
+const firebaseConfig={apiKey:"COLE_AQUI",authDomain:"COLE_AQUI",projectId:"COLE_AQUI",appId:"COLE_AQUI"};
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fnum=n=>Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:3});
+const fdate=d=>d?d.split('-').reverse().join('/'):'';
+const dig=s=>String(s||'').replace(/\D/g,'');
+const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+const SIT={sem:'Sem pedido',parcial:'Pedido parcial',completo:'Pedido completo'};
+const pend=i=>Math.max(0,(i.qtd||0)-(i.cont||0));
+const hoje=()=>new Date(Date.now()-new Date().getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const dias=i=>i.validade?Math.round((Date.parse(i.validade)-Date.parse(hoje()))/864e5):null;
+const vstat=i=>{const d=dias(i);return d===null?'':d<0?'venc':d<=30?'prox':''};
+const nst=n=>n.itens.some(i=>i.sit==='sem')?'sem':n.itens.some(i=>i.sit==='parcial')?'parcial':'completo';
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),3500)}
+function erro(e){const m={'auth/invalid-credential':'E-mail ou senha incorretos.','auth/wrong-password':'E-mail ou senha incorretos.','auth/user-not-found':'E-mail ou senha incorretos.','auth/invalid-email':'E-mail inválido.','auth/too-many-requests':'Muitas tentativas. Aguarde alguns minutos.','auth/network-request-failed':'Sem conexão com a internet.','auth/weak-password':'A senha deve ter ao menos 6 caracteres.','auth/email-already-in-use':'Este e-mail já está cadastrado.','permission-denied':'Você não tem permissão para esta ação.','unavailable':'Sem conexão com o servidor.'};return m[e&&e.code]||('Erro: '+((e&&e.message)||e))}
+
+if(firebaseConfig.apiKey==='COLE_AQUI'){$('#login').hidden=false;$('#lmsg').textContent='Configuração pendente: cole os dados do Firebase no início do script (veja o LEIA-ME.md).';throw new Error('config')}
+const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=getFirestore(fapp);
+let me=null,notas=[],users=[],editId=null,unN=null,unU=null;
+
+/* ---------- login ---------- */
+$('#lf').onsubmit=async e=>{e.preventDefault();$('#lmsg').textContent='';
+  try{await signInWithEmailAndPassword(auth,$('#le').value.trim(),$('#ls').value)}catch(x){$('#lmsg').textContent=erro(x)}};
+$('#esq').onclick=async()=>{const m=$('#le').value.trim();if(!m){$('#lmsg').textContent='Digite seu e-mail e clique de novo em "Esqueci minha senha".';return}
+  try{await sendPasswordResetEmail(auth,m);$('#lmsg').textContent='Se o e-mail estiver cadastrado, você receberá o link para criar uma nova senha.'}catch(x){$('#lmsg').textContent=erro(x)}};
+$('#bsai').onclick=()=>signOut(auth);
+onAuthStateChanged(auth,async u=>{
+  if(unN){unN();unN=null}if(unU){unU();unU=null}
+  if(!u){me=null;$('#app').hidden=true;$('#login').hidden=false;return}
+  let p=null;try{p=await getDoc(doc(db,'users',u.uid))}catch(x){}
+  if(!p||!p.exists()||!p.data().ativo){$('#lmsg').textContent='Seu acesso não está autorizado. Fale com o administrador.';await signOut(auth);return}
+  me={uid:u.uid,email:u.email,...p.data()};
+  $('#login').hidden=true;$('#app').hidden=false;$('#lmsg').textContent='';
+  $('#quem').textContent=`${me.nome||me.email} (${me.role==='admin'?'administrador':'usuário'})`;$('#badm').hidden=me.role!=='admin';
+  unN=onSnapshot(collection(db,'notas'),s=>{notas=s.docs.map(d=>({...d.data(),id:d.id}));render()},x=>toast(erro(x)));
+});
+
+/* ---------- lista e painel ---------- */
+const itens=()=>notas.flatMap(n=>n.itens||[]);
+function match(n,f,q){
+  if(f!=='todos'){const ok=i=>f==='pend'?i.sit!=='completo':f==='venc'?!!vstat(i):i.sit===f;if(!n.itens.some(ok))return false}
+  if(!q)return true;
+  return norm([n.nf,n.serie,n.empresa,n.cnpj,n.chave,...n.itens.flatMap(i=>[i.produto,i.codigo,i.lote,i.pedido])].join(' ')).includes(q)||(dig(q)&&dig([n.cnpj,n.chave].join(' ')).includes(dig(q)))
+}
+function render(){
+  const it=itens(),c=s=>it.filter(i=>i.sit===s).length;
+  const vp=it.filter(i=>vstat(i)).length;
+  $('#kpis').innerHTML=[['Notas cadastradas',notas.length,''],['Produtos cadastrados',it.length,''],['Sem pedido',c('sem'),'sem'],['Pedido parcial',c('parcial'),'parcial'],['Pedido completo',c('completo'),'completo'],['Itens com pendência',c('sem')+c('parcial'),'sem'],['Validade próxima ou vencida',vp,vp?'sem':'']].map(k=>`<div class="k ${k[2]}"><b>${k[1]}</b><span>${k[0]}</span></div>`).join('');
+  const u={};it.forEach(i=>{if(pend(i)>0)u[i.un]=(u[i.un]||0)+pend(i)});
+  $('#porun').textContent=Object.keys(u).length?'Quantidade pendente de pedido, por unidade: '+Object.entries(u).map(([k,v])=>`${fnum(v)} ${k}`).join(' | '):'Nenhuma quantidade pendente de pedido.';
+  const f=$('#flt').value,q=norm($('#q').value.trim());
+  const l=notas.filter(n=>match(n,f,q)).sort((a,b)=>(b.data||'').localeCompare(a.data||'')||(b.criadoEm||0)-(a.criadoEm||0));
+  $('#lista').innerHTML=l.length?l.map(card).join(''):`<div class="empty">${notas.length?'Nenhuma nota encontrada com esse filtro ou busca.':'Nenhuma nota cadastrada. Clique em "Nova nota" para começar.'}</div>`;
+}
+function card(n){
+  const s=nst(n);
+  return `<details class="nota"><summary><b>NF ${esc(n.nf)}${n.serie?'/'+esc(n.serie):''}</b><span class="e">${esc(n.empresa)}</span><span class="mu">${fdate(n.data)}</span><span class="mu">${n.itens.length} produto(s)</span><span class="bd ${s}">${s==='sem'?'Pendente de pedido':SIT[s]}</span></summary>
+<div class="body">${n.cnpj?`<div class="det">CNPJ: ${esc(n.cnpj)}</div>`:''}${n.chave?`<div class="det">Chave: ${esc(n.chave)}</div>`:''}${n.obs?`<div class="det">Obs.: ${esc(n.obs)}</div>`:''}
+${n.itens.map(i=>{const v=vstat(i);return `<div class="it"><div><b>${esc(i.produto)}</b>${i.codigo?`<small>Cód. ${esc(i.codigo)}</small>`:''}${i.obs?`<small>${esc(i.obs)}</small>`:''}</div>
+<div>${fnum(i.qtd)} ${esc(i.un)}</div>
+<div>${i.lote?'Lote '+esc(i.lote):'Sem lote'}${i.validade?`<small>Validade ${fdate(i.validade)} ${v==='venc'?'<span class="bd venc">Vencido</span>':v==='prox'?`<span class="bd prox">Vence em ${dias(i)} dia(s)</span>`:''}</small>`:''}</div>
+<div><span class="bd ${i.sit}">${SIT[i.sit]}</span>${i.pedido?`<small>Pedido ${esc(i.pedido)}</small>`:''}${i.sit!=='sem'?`<small>Contemplado: ${fnum(i.cont)} ${esc(i.un)}</small>`:''}<small>Pendente: ${fnum(pend(i))} ${esc(i.un)}</small></div></div>`}).join('')}
+<div class="det">Registrada por ${esc(n.criadoPorNome||'-')} em ${n.criadoEm?new Date(n.criadoEm).toLocaleString('pt-BR'):'-'}${n.atualizadoPor&&n.atualizadoEm!==n.criadoEm?` | Última alteração por ${esc(n.atualizadoPor)}`:''}</div>
+<div class="acts"><button data-a="e" data-id="${n.id}">Editar</button>${me.role==='admin'?`<button class="lk" data-a="d" data-id="${n.id}">Excluir nota</button>`:''}</div></div></details>`;
+}
+$('#q').oninput=render;$('#flt').onchange=render;
+$('#lista').onclick=async e=>{const b=e.target.closest('button[data-a]');if(!b)return;const n=notas.find(x=>x.id===b.dataset.id);if(!n)return;
+  if(b.dataset.a==='e')abrir(n);
+  else if(confirm(`Excluir a NF ${n.nf} e todos os seus produtos? Esta ação não pode ser desfeita.`)){try{await deleteDoc(doc(db,'notas',n.id));toast('Nota excluída.')}catch(x){toast(erro(x))}}};
+
+/* ---------- formulário ---------- */
+function addIt(d={}){
+  const w=document.createElement('div');w.className='ip';
+  w.innerHTML=`<div class="gr"><label class="w2">Produto *<input data-f="produto"></label><label>Código<input data-f="codigo"></label>
+<label>Quantidade faturada *<input data-f="qtd" type="number" step="any" min="0" inputmode="decimal"></label>
+<label>Unidade *<input data-f="un" list="uns" placeholder="L, kg, dose..."></label><label>Lote<input data-f="lote"></label><label>Validade do lote<input data-f="validade" type="date"></label>
+<label>Situação do pedido *<select data-f="sit"><option value="sem">Sem pedido</option><option value="parcial">Pedido parcial</option><option value="completo">Pedido completo</option></select></label>
+<label class="po">Nº do pedido<input data-f="pedido"></label><label class="po">Qtd. contemplada<input data-f="cont" type="number" step="any" min="0" inputmode="decimal"></label>
+<label class="w4">Observações do produto<input data-f="obs"></label><p class="pe"></p><button type="button" class="lk">Remover este produto</button></div>`;
+  const g=f=>w.querySelector(`[data-f="${f}"]`);
+  Object.entries({produto:d.produto,codigo:d.codigo,qtd:d.qtd,un:d.un,lote:d.lote,validade:d.validade,sit:d.sit||'sem',pedido:d.pedido,cont:d.sit==='sem'?'':d.cont,obs:d.obs}).forEach(([k,v])=>{g(k).value=v??''});
+  const sync=()=>{const s=g('sit').value,q=+g('qtd').value||0;w.classList.toggle('sem',s==='sem');
+    const c=s==='sem'?0:(s==='completo'&&!g('cont').value?q:+g('cont').value||0);
+    w.querySelector('.pe').textContent=q?`Faturado: ${fnum(q)} ${g('un').value} | Contemplado: ${fnum(c)} | Pendente: ${fnum(Math.max(0,q-c))} ${g('un').value}`:''};
+  w.oninput=sync;sync();
+  w.querySelector('.lk').onclick=()=>{if($('#its').children.length<2)return toast('A nota precisa ter ao menos um produto.');if(confirm('Remover este produto da nota?'))w.remove()};
+  $('#its').append(w);
+}
+function abrir(n){
+  editId=n?n.id:null;$('#ft').textContent=n?`Editar NF ${n.nf}`:'Cadastrar nota fiscal';$('#fmsg').textContent='';
+  ['nf','serie','data','cnpj','empresa','chave','obs'].forEach(k=>$('#'+k).value=n?(n[k]||''):'');
+  $('#its').innerHTML='';(n?n.itens:[{}]).forEach(addIt);$('#fdlg').showModal();
+}
+$('#bnew').onclick=()=>abrir(null);$('#addi').onclick=()=>addIt();$('#fcan').onclick=()=>$('#fdlg').close();
+$('#nf-form').onsubmit=async e=>{
+  e.preventDefault();const bad=m=>{$('#fmsg').textContent=m;return null};
+  const n={nf:$('#nf').value.trim(),serie:$('#serie').value.trim(),data:$('#data').value,cnpj:dig($('#cnpj').value),empresa:$('#empresa').value.trim(),chave:dig($('#chave').value),obs:$('#obs').value.trim()};
+  if(!n.nf||!n.data||!n.empresa)return bad('Informe o número da NF, a data de emissão e a empresa emitente.');
+  if(n.cnpj&&n.cnpj.length!==14)return bad('O CNPJ deve ter 14 dígitos.');
+  if(n.chave&&n.chave.length!==44)return bad(`A chave de acesso tem ${n.chave.length} dígitos; ela deve ter 44.`);
+  n.itens=[...$('#its').children].map(w=>{const g=f=>w.querySelector(`[data-f="${f}"]`).value.trim();
+    return{produto:g('produto'),codigo:g('codigo'),qtd:Number(g('qtd')),un:g('un'),lote:g('lote'),validade:g('validade'),sit:g('sit'),pedido:g('pedido'),cont:Number(g('cont')||0),obs:g('obs')}});
+  for(const [k,i] of n.itens.entries()){const p=`Produto ${k+1}: `;
+    if(!i.produto)return bad(p+'informe o nome do produto.');
+    if(!(i.qtd>0))return bad(p+'a quantidade faturada deve ser maior que zero.');
+    if(!i.un)return bad(p+'informe a unidade de medida.');
+    if(i.cont<0)return bad(p+'a quantidade contemplada não pode ser negativa.');
+    if(i.sit==='sem'){i.cont=0;i.pedido=''}
+    else{
+      if(!i.pedido)return bad(p+'informe o número do pedido de compra.');
+      if(i.sit==='parcial'&&!(i.cont>0&&i.cont<i.qtd))return bad(p+'no pedido parcial, a quantidade contemplada deve ser maior que zero e menor que a faturada. Se cobre tudo, use "Pedido completo".');
+      if(i.sit==='completo'){if(!i.cont)i.cont=i.qtd;
+        if(i.cont<i.qtd)return bad(p+'no pedido completo, a quantidade contemplada deve cobrir toda a quantidade faturada.');
+        if(i.cont>i.qtd){const j=prompt(`${p}a quantidade contemplada (${fnum(i.cont)}) é maior que a faturada (${fnum(i.qtd)}). Informe a justificativa para confirmar a exceção:`);
+          if(!j||!j.trim())return bad(p+'exceção não confirmada.');i.obs=(i.obs?i.obs+' | ':'')+'Exceção de quantidade: '+j.trim()}}
+    }}
+  const key=x=>[x.cnpj||norm(x.empresa),x.nf,x.serie].join('|');
+  if(notas.some(x=>x.id!==editId&&key(x)===key(n))&&!confirm('Já existe uma nota com o mesmo emitente, número e série. Salvar mesmo assim?'))return;
+  if(n.chave&&notas.some(x=>x.id!==editId&&x.chave===n.chave)&&!confirm('Já existe uma nota com esta chave de acesso. Salvar mesmo assim?'))return;
+  n.atualizadoEm=Date.now();n.atualizadoPor=me.nome||me.email;
+  if(!editId){n.criadoEm=n.atualizadoEm;n.criadoPor=me.uid;n.criadoPorNome=n.atualizadoPor}
+  const b=$('#fsave');b.disabled=true;$('#fmsg').textContent='Salvando...';
+  try{await setDoc(editId?doc(db,'notas',editId):doc(collection(db,'notas')),n,{merge:true});$('#fdlg').close();toast(editId?'Nota atualizada com sucesso.':'Nota salva com sucesso.')}
+  catch(x){$('#fmsg').textContent='Não foi possível salvar: '+erro(x)}
+  b.disabled=false;
+};
+
+/* ---------- exportar, formulário e impressão ---------- */
+const COLS=['NF','Série','Data da NF','Empresa','CNPJ','Chave de acesso','Código do produto','Produto','Quantidade','Unidade','Lote','Validade','Situação do pedido','Nº do pedido','Qtd. contemplada','Qtd. pendente','Observações'];
+function linhas(){return notas.flatMap(n=>n.itens.map(i=>({'NF':n.nf,'Série':n.serie||'','Data da NF':fdate(n.data),'Empresa':n.empresa,'CNPJ':n.cnpj||'','Chave de acesso':n.chave||'','Código do produto':i.codigo||'','Produto':i.produto,'Quantidade':i.qtd,'Unidade':i.un,'Lote':i.lote||'','Validade':fdate(i.validade),'Situação do pedido':SIT[i.sit],'Nº do pedido':i.pedido||'','Qtd. contemplada':i.cont||0,'Qtd. pendente':pend(i),'Observações':[n.obs,i.obs].filter(Boolean).join(' | ')})))}
+function exportar(tipo){if(!notas.length)return toast('Não há notas para exportar.');
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(linhas(),{header:COLS}),'Notas');
+  XLSX.writeFile(wb,`notas-coap-${hoje()}.${tipo}`,{bookType:tipo})}
+$('#bx').onclick=()=>exportar('xlsx');$('#bc').onclick=()=>exportar('csv');
+$('#bm').onclick=()=>{const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([COLS.filter(c=>c!=='Qtd. pendente')]);ws['!cols']=COLS.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,'Formulário');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['Instruções de preenchimento'],[''],['1. Preencha uma linha para cada produto ou lote. Repita os dados da nota (NF, série, data, empresa) nas linhas da mesma nota.'],['2. Data da NF e Validade: formato DD/MM/AAAA.'],['3. Chave de acesso: 44 dígitos, sem espaços. CNPJ: 14 dígitos.'],['4. Unidade: L, kg, dose, un, cx, galão ou outra.'],['5. Situação do pedido: escreva Sem pedido, Pedido parcial ou Pedido completo.'],['6. Pedido parcial: informe o Nº do pedido e a Qtd. contemplada (maior que zero e menor que a quantidade).'],['7. Pedido completo: informe o Nº do pedido e a Qtd. contemplada igual à quantidade.'],['8. Sem pedido: deixe Nº do pedido e Qtd. contemplada em branco.'],['9. Produto com mais de um lote: use uma linha para cada lote, com a quantidade de cada um.']]),'Instruções');
+  XLSX.writeFile(wb,'formulario-notas-coap.xlsx')};
+$('#bp').onclick=()=>{$('#flt').value='pend';render();document.querySelectorAll('details.nota').forEach(d=>d.open=true);setTimeout(()=>print(),150)};
+addEventListener('beforeprint',()=>document.querySelectorAll('details.nota').forEach(d=>d.open=true));
+
+/* ---------- configurações ---------- */
+$('#bcfg').onclick=()=>{$('#cmail').textContent='Conta: '+me.email;$('#cmsg').textContent='';$('#cf').reset();$('#cdlg').showModal()};
+$('#ccan').onclick=()=>$('#cdlg').close();
+$('#cf').onsubmit=async e=>{e.preventDefault();const m=$('#cmsg');
+  if($('#pn').value.length<6)return m.textContent='A nova senha deve ter ao menos 6 caracteres.';
+  if($('#pn').value!==$('#pr').value)return m.textContent='A confirmação não confere com a nova senha.';
+  try{const u=auth.currentUser;await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,$('#pa').value));await updatePassword(u,$('#pn').value);$('#cdlg').close();toast('Senha alterada com sucesso.')}
+  catch(x){m.textContent=erro(x)}};
+
+/* ---------- usuários (administrador) ---------- */
+$('#badm').onclick=()=>{$('#umsg').textContent='';$('#udlg').showModal();
+  if(unU)return;unU=onSnapshot(collection(db,'users'),s=>{users=s.docs.map(d=>({...d.data(),id:d.id}));ulist()},x=>toast(erro(x)))};
+$('#ucan').onclick=()=>$('#udlg').close();
+function ulist(){$('#ulist').innerHTML=users.map(u=>`<div class="ur"><span>${esc(u.nome)}</span><span>${esc(u.email)}</span>
+<select data-u="${u.id}" data-k="role" ${u.id===me.uid?'disabled':''}><option value="user" ${u.role!=='admin'?'selected':''}>Usuário</option><option value="admin" ${u.role==='admin'?'selected':''}>Administrador</option></select>
+<select data-u="${u.id}" data-k="ativo" ${u.id===me.uid?'disabled':''}><option value="1" ${u.ativo?'selected':''}>Ativo</option><option value="0" ${!u.ativo?'selected':''}>Bloqueado</option></select></div>`).join('')}
+$('#ulist').onchange=async e=>{const s=e.target;if(!s.dataset.u)return;
+  try{await setDoc(doc(db,'users',s.dataset.u),{[s.dataset.k]:s.dataset.k==='ativo'?s.value==='1':s.value},{merge:true});toast('Permissão atualizada.')}catch(x){toast(erro(x))}};
+$('#uf').onsubmit=async e=>{e.preventDefault();const m=$('#umsg');m.textContent='Criando...';
+  const sec=initializeApp(firebaseConfig,'sec'+Date.now());
+  try{const c=await createUserWithEmailAndPassword(getAuth(sec),$('#ue').value.trim(),$('#up').value);
+    await setDoc(doc(db,'users',c.user.uid),{nome:$('#un').value.trim(),email:$('#ue').value.trim(),role:$('#ur').value,ativo:true,criadoEm:Date.now()});
+    await signOut(getAuth(sec));$('#uf').reset();m.textContent='';toast('Usuário criado. Informe a senha provisória a ele.')}
+  catch(x){m.textContent=erro(x)}
+  finally{deleteApp(sec)}};
+</script>
+</body>
+</html>
